@@ -14,7 +14,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 
-export default (db, userCreateMq) => {
+export default (db, userCreateMq, punchAddedMq, discountMq) => {
   var app = express();
   app.use(bodyParser.json());
 
@@ -149,6 +149,20 @@ export default (db, userCreateMq) => {
       created: new Date().toLocaleString()
     });
     punches.set(req.params.id, oldPunches);
+    punchAddedMq.sendToQueue(
+      punchAction,
+      new Buffer(
+        JSON.stringify({
+          userId,
+          name,
+          companyId,
+          companyName,
+          punchCount,
+          created,
+          punchesLeft
+        })
+      )
+    );
 
     res.json(true);
   });
